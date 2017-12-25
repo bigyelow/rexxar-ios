@@ -8,15 +8,21 @@
 
 #import "RXRSchemeHandler.h"
 
-static NSString *rxrRequestScheme = @"rexxar-request";
-
 @implementation RXRSchemeHandler
+
+- (instancetype)initWithScheme:(NSString *)scheme
+{
+  if (self = [super init]) {
+    _scheme = [scheme copy];
+  }
+  return self;
+}
 
 #pragma mark - WKURLSchemeHandler
 
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask NS_AVAILABLE_IOS(11.0)
 {
-  if (![urlSchemeTask.request.URL.scheme isEqualToString:rxrRequestScheme]) {
+  if (![urlSchemeTask.request.URL.scheme isEqualToString:_scheme]) {
     return;
   }
   

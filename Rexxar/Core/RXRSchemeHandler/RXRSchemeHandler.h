@@ -9,6 +9,12 @@
 @import Foundation;
 @import WebKit;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface RXRSchemeHandler : NSObject <WKURLSchemeHandler>
 
+@property (nonatomic, readonly, nullable) NSString *scheme;
+
+- (instancetype)initWithScheme:(nullable NSString *)scheme;
+
 @end
+NS_ASSUME_NONNULL_END

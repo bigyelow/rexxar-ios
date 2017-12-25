@@ -7,7 +7,7 @@
 //
 
 #import "RXRNSURLProtocol.h"
-#import "RXRDecorator.h"
+@class RXRRequestDecorator;
 
 /**
  * `RXRRequestInterceptor` 是一个 Rexxar-Container 的请求侦听器。
@@ -16,6 +16,6 @@
  */
 @interface RXRRequestInterceptor : RXRNSURLProtocol
 
-@property (class, nonatomic, copy, nullable) NSArray<id<RXRDecorator>> *decorators;
+@property (class, nonatomic, copy, nullable) NSArray<RXRRequestDecorator *> *decorators;
 
 @end

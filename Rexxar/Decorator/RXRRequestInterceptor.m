@@ -11,18 +11,18 @@
 #import "RXRRequestInterceptor.h"
 #import "RXRURLSessionDemux.h"
 
-static NSArray<id<RXRDecorator>> *_decorators;
+static NSArray<RXRRequestDecorator *> *_decorators;
 
 @implementation RXRRequestInterceptor
 
 #pragma mark - Properties
 
-+ (NSArray<id<RXRDecorator>> *)decorators
++ (NSArray<RXRRequestDecorator *> *)decorators
 {
   return _decorators;
 }
 
-+ (void)setDecorators:(NSArray<id<RXRDecorator>> *)decorators
++ (void)setDecorators:(NSArray<RXRRequestDecorator *> *)decorators
 {
   _decorators = [decorators copy];
 }
@@ -40,11 +40,11 @@ static NSArray<id<RXRDecorator>> *_decorators;
     return NO;
   }
 
-  for (id<RXRDecorator> decorator in _decorators) {
-    if ([decorator shouldInterceptRequest:request]){
-      return YES;
-    }
-  }
+//  for (RXRRequestDecorator * decorator in _decorators) {
+//    if ([decorator shouldInterceptRequest:request]){
+//      return YES;
+//    }
+//  }
 
   return NO;
 }
@@ -58,13 +58,13 @@ static NSArray<id<RXRDecorator>> *_decorators;
     newRequest = [self.request mutableCopy];
   }
 
-  for (id<RXRDecorator> decorator in _decorators) {
-    if ([decorator shouldInterceptRequest:newRequest]) {
-      if ([decorator respondsToSelector:@selector(prepareWithRequest:)]) {
-        [decorator prepareWithRequest:newRequest];
-      }
-      newRequest = [[decorator decoratedRequestFromOriginalRequest:newRequest] mutableCopy];
-    }
+  for (RXRRequestDecorator * decorator in _decorators) {
+//    if ([decorator shouldInterceptRequest:newRequest]) {
+//      if ([decorator respondsToSelector:@selector(prepareWithRequest:)]) {
+//        [decorator prepareWithRequest:newRequest];
+//      }
+//      newRequest = [[decorator decoratedRequestFromOriginalRequest:newRequest] mutableCopy];
+//    }
   }
 
   // 由于在 iOS9 及以下版本对 WKWebView 缓存支持不好，所有的请求不使用缓存

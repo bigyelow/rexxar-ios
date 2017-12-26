@@ -50,6 +50,7 @@
   // contain duplicated query string if the original request is decorated more than 2 times.
   NSURLComponents *comp = [[NSURLComponents alloc] initWithURL:mutableRequest.URL resolvingAgainstBaseURL:NO];
   comp.query = nil;
+  comp.scheme = [self schemeForRequest:mutableRequest] ?: mutableRequest.URL.scheme;
   mutableRequest.URL = comp.URL;
 
   return [_requestSerializer requestBySerializingRequest:mutableRequest
@@ -65,6 +66,11 @@
 }
 
 - (NSDictionary *)parametersForRequest:(NSURLRequest *)request
+{
+  return nil;
+}
+
+- (NSString *)schemeForRequest:(NSURLRequest *)request
 {
   return nil;
 }

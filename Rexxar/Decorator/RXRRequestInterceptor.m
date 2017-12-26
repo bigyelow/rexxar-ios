@@ -11,18 +11,18 @@
 #import "RXRRequestInterceptor.h"
 #import "RXRURLSessionDemux.h"
 
-static NSArray<RXRRequestDecorator *> *_decorators;
+static NSArray<id<RXRDecorator>> *_decorators;
 
 @implementation RXRRequestInterceptor
 
 #pragma mark - Properties
 
-+ (NSArray<RXRRequestDecorator *> *)decorators
++ (NSArray<id<RXRDecorator>> *)decorators
 {
   return _decorators;
 }
 
-+ (void)setDecorators:(NSArray<RXRRequestDecorator *> *)decorators
++ (void)setDecorators:(NSArray<id<RXRDecorator>> *)decorators
 {
   _decorators = [decorators copy];
 }
@@ -40,11 +40,11 @@ static NSArray<RXRRequestDecorator *> *_decorators;
     return NO;
   }
 
-//  for (RXRRequestDecorator * decorator in _decorators) {
-//    if ([decorator shouldInterceptRequest:request]){
-//      return YES;
-//    }
-//  }
+  for (id<RXRDecorator> decorator in _decorators) {
+    if ([decorator shouldInterceptRequest:request]){
+      return YES;
+    }
+  }
 
   return NO;
 }
@@ -58,16 +58,16 @@ static NSArray<RXRRequestDecorator *> *_decorators;
     newRequest = [self.request mutableCopy];
   }
 
-  for (RXRRequestDecorator * decorator in _decorators) {
-//    if ([decorator shouldInterceptRequest:newRequest]) {
-//      if ([decorator respondsToSelector:@selector(prepareWithRequest:)]) {
-//        [decorator prepareWithRequest:newRequest];
-//      }
-//      newRequest = [[decorator decoratedRequestFromOriginalRequest:newRequest] mutableCopy];
-//    }
+  for (id<RXRDecorator> decorator in _decorators) {
+    if ([decorator shouldInterceptRequest:newRequest]) {
+      if ([decorator respondsToSelector:@selector(prepareWithRequest:)]) {
+        [decorator prepareWithRequest:newRequest];
+      }
+      newRequest = [[decorator decoratedRequestFromOriginalRequest:newRequest] mutableCopy];
+    }
   }
 
-  // 由于在 iOS9 及以下版本对 WKWebView 缓存支持不好，所有的请求不使用缓存
+  // 由于在 iOS9 及一下版本对 WKWebView 缓存支持不好，所有的请求不使用缓存
   if ([[[UIDevice currentDevice] systemVersion] compare:@"10.0" options:NSNumericSearch] == NSOrderedAscending) {
     [newRequest setValue:nil forHTTPHeaderField:@"If-None-Match"];
     [newRequest setValue:nil forHTTPHeaderField:@"If-Modified-Since"];

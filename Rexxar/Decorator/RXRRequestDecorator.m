@@ -14,99 +14,56 @@
 @interface RXRRequestDecorator ()
 
 @property (nonatomic, strong) RXRHTTPRequestSerializer *requestSerializer;
-@property (nonatomic, copy) NSURLRequest *decoratedRequest;
-@property (nonatomic, assign) BOOL needRecomputeDecoratedRequest;
 
 @end
 
 @implementation RXRRequestDecorator
-@synthesize decoratingHeaders = _decoratingHeaders;
-@synthesize decoratingParameters = _decoratingParameters;
 
 - (instancetype)init
 {
-  NSAssert(NO, @"use initWithRequest:");
-  return [self initWithDecoratingHeaders:nil decoratingParameters:nil];
+  return [self initWithHeaders:@{} parameters:@{}];
 }
 
-- (instancetype)initWithDecoratingHeaders:(NSDictionary *)headers
-                     decoratingParameters:(NSDictionary *)parameters
+- (instancetype)initWithHeaders:(NSDictionary *)headers
+                     parameters:(NSDictionary *)parameters
 {
-  if (self = [super init]) {
-    _decoratingHeaders = [headers copy];
-    _decoratingParameters = [parameters copy];
+  self = [super init];
+  if (self) {
+    _headers = [headers copy];
+    _parameters = [parameters copy];
+    _requestSerializer = [[RXRHTTPRequestSerializer alloc] init];
   }
-
   return self;
 }
 
-#pragma mark - Properties
-
-- (NSURLRequest *)decoratedRequest
+- (BOOL)shouldInterceptRequest:(NSURLRequest *)request
 {
-  if (!_decoratedRequest || _needRecomputeDecoratedRequest) {
-    _decoratedRequest = [self _rxr_getDecoratedRequest];
-    self.needRecomputeDecoratedRequest = NO;
-  }
-  return _decoratedRequest;
-}
-
-- (NSDictionary *)decoratingHeaders
-{
-  return _decoratingHeaders;
-}
-
-- (void)setDecoratingHeaders:(NSDictionary *)decoratingHeaders
-{
-  _decoratedRequest = [decoratingHeaders copy];
-  self.needRecomputeDecoratedRequest = YES;
-}
-
-- (NSDictionary *)decoratingParameters
-{
-  return _decoratingParameters;
-}
-
-- (void)setDecoratingParameters:(NSDictionary *)decoratingParameters
-{
-  _decoratingParameters = [decoratingParameters copy];
-  self.needRecomputeDecoratedRequest = YES;
-}
-
-//- (BOOL)shouldInterceptRequest:(NSURLRequest *)request
-//{
-//  // 只处理 Http 和 https 请求
-//  if (![request.URL rxr_isHttpOrHttps]) {
-//    return NO;
-//  }
-//
-//  // 不处理静态资源文件
-//  if ([[self class] _rxr_isStaticResourceRequest:request]) {
-//    return NO;
-//  }
-//
-//  return YES;
-//}
-
-#pragma mark - Private methods
-
-- (NSURLRequest *)_rxr_getDecoratedRequest
-{
-  if (!_originalRequest) {
-    return nil;
+  // 只处理 Http 和 https 请求
+  if (![request.URL rxr_isHttpOrHttps]) {
+    return NO;
   }
 
-  NSMutableURLRequest *mutableRequest = [_originalRequest mutableCopy];
+  // 不处理静态资源文件
+  if ([[self class] _rxr_isStaticResourceRequest:request]) {
+    return NO;
+  }
+
+  return YES;
+}
+
+- (NSURLRequest *)decoratedRequestFromOriginalRequest:(NSURLRequest *)originalRequest
+{
+  NSMutableURLRequest *mutableRequest = [originalRequest mutableCopy];
 
   // Request headers
-  [self.decoratingHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+  [self.headers enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
     if ([key isKindOfClass:[NSString class]] && [obj isKindOfClass:[NSString class]]){
       [mutableRequest setValue:obj forHTTPHeaderField:key];
     }
   }];
 
   // Request url parameters
-  NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithDictionary:self.decoratingParameters];
+  NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithDictionary:self.parameters];
   [self _rxr_addQuery:mutableRequest.URL.query toParameters:parameters];
 
   // Note: mutableRequest.URL.query has been added to the paramters, _requestSerializer will generate a new NSURLRequest
@@ -120,6 +77,8 @@
                                           withParameters:parameters
                                                    error:nil];
 }
+
+#pragma mark - Private methods
 
 - (void)_rxr_addQuery:(NSString *)query toParameters:(NSMutableDictionary *)parameters
 {

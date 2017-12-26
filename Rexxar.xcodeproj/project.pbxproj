@@ -13,6 +13,7 @@
 		713F6E841FEF8EF300A9F7C1 /* RXRSchemeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 713F6E821FEF8EF300A9F7C1 /* RXRSchemeHandler.m */; };
 		713F6E8B1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h in Headers */ = {isa = PBXBuildFile; fileRef = 713F6E891FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h */; };
 		713F6E8C1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m in Sources */ = {isa = PBXBuildFile; fileRef = 713F6E8A1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m */; };
+		713F6E901FF21ED000A9F7C1 /* RXRDecorator.h in Headers */ = {isa = PBXBuildFile; fileRef = 713F6E8F1FF21ED000A9F7C1 /* RXRDecorator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		719255591DE6E055009F0687 /* RXRURLRequestSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */; };
 		7192555A1DE6E055009F0687 /* RXRURLRequestSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */; };
 		7196C5EE1FB152D400E2B57C /* RXRLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7196C5ED1FB152D400E2B57C /* RXRLogger.h */; };
@@ -116,6 +117,7 @@
 		713F6E821FEF8EF300A9F7C1 /* RXRSchemeHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RXRSchemeHandler.m; sourceTree = "<group>"; };
 		713F6E891FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRSchemeHandlerDecorator.h; sourceTree = "<group>"; };
 		713F6E8A1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RXRSchemeHandlerDecorator.m; sourceTree = "<group>"; };
+		713F6E8F1FF21ED000A9F7C1 /* RXRDecorator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRDecorator.h; sourceTree = "<group>"; };
 		719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RXRURLRequestSerialization.h; sourceTree = "<group>"; };
 		719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RXRURLRequestSerialization.m; sourceTree = "<group>"; };
 		7196C5EC1FB06C6800E2B57C /* RXRDataValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRDataValidator.h; sourceTree = "<group>"; };
@@ -396,6 +398,7 @@
 		A35E72361D7FCBF900D38BC0 /* Decorator */ = {
 			isa = PBXGroup;
 			children = (
+				713F6E8F1FF21ED000A9F7C1 /* RXRDecorator.h */,
 				A35E72381D7FCBF900D38BC0 /* RXRRequestDecorator.h */,
 				A35E72391D7FCBF900D38BC0 /* RXRRequestDecorator.m */,
 				7132597A1E713C4500A6D7EA /* RXRRequestInterceptor.h */,
@@ -525,6 +528,7 @@
 				A35E71E01D7FC86000D38BC0 /* RXRPullRefreshWidget.h in Headers */,
 				A35D15A21D66AE2B009B24DC /* RXRAlertDialogWidget.h in Headers */,
 				98BCCFB81E698BAA007C2100 /* NSHTTPURLResponse+Rexxar.h in Headers */,
+				713F6E901FF21ED000A9F7C1 /* RXRDecorator.h in Headers */,
 				713F6E831FEF8EF300A9F7C1 /* RXRSchemeHandler.h in Headers */,
 				A398DC321D222CC1006D4817 /* RXRModel.h in Headers */,
 				7132597C1E713C4500A6D7EA /* RXRRequestInterceptor.h in Headers */,
@@ -860,6 +864,7 @@
 		98B47B0C1BF1E0E00087735C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -878,6 +883,7 @@
 		98B47B0D1BF1E0E00087735C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -898,6 +904,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Brand Assets";
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"DSK_WIDGET=1",
@@ -918,6 +925,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Brand Assets";
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				INFOPLIST_FILE = RexxarDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -931,6 +939,7 @@
 		B90EBEC41BFEAA830055D477 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				INFOPLIST_FILE = RexxarTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -942,6 +951,7 @@
 		B90EBEC51BFEAA830055D477 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				INFOPLIST_FILE = RexxarTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

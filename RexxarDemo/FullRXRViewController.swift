@@ -31,7 +31,7 @@ class FullRXRViewController: RXRViewController {
     // Decorators
     let headers = ["Customer-Authorization": "Bearer token"]
     let parameters = ["apikey": "apikey value"]
-    let requestDecorator = RXRRequestDecorator(decoratingHeaders: headers, decoratingParameters: parameters)
+    let requestDecorator = RXRRequestDecorator(headers: headers, parameters: parameters)
     RXRRequestInterceptor.decorators = [requestDecorator]
     RXRNSURLProtocol.registerRXRProtocolClass(RXRRequestInterceptor.self)
   }

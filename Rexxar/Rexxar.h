@@ -20,6 +20,7 @@
 #import "RXRContainerAPI.h"
 
 #import "RXRRequestInterceptor.h"
+#import "RXRDecorator.h"
 #import "RXRRequestDecorator.h"
 
 #import "NSURL+Rexxar.h"

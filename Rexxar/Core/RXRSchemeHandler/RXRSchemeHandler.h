@@ -9,16 +9,16 @@
 @import Foundation;
 @import WebKit;
 
-@class RXRRequestDecorator;
+@class RXRSchemeHandlerDecorator;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface RXRSchemeHandler : NSObject <WKURLSchemeHandler>
 
 @property (nonatomic, readonly, nullable) NSString *scheme;
-@property (nonatomic, readonly, nullable) NSArray <RXRRequestDecorator *> *requestDecoarators;
+@property (nonatomic, readonly, nullable) NSArray <RXRSchemeHandlerDecorator *> *decorators;
 
 - (instancetype)initWithScheme:(nullable NSString *)scheme
-             requestDecorators:(nullable NSArray<RXRRequestDecorator *> *)decorators;
+                    decorators:(nullable NSArray<RXRSchemeHandlerDecorator *> *)decorators;
 
 @end
 NS_ASSUME_NONNULL_END

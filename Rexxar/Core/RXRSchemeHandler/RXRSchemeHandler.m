@@ -7,7 +7,7 @@
 //
 
 #import "RXRSchemeHandler.h"
-#import "RXRRequestDecorator.h"
+#import "RXRSchemeHandlerDecorator.h"
 #import "RXRURLSessionDemux.h"
 
 @interface RXRSchemeHandler ()
@@ -20,11 +20,11 @@
 
 @implementation RXRSchemeHandler
 
-- (instancetype)initWithScheme:(NSString *)scheme requestDecorators:(NSArray<RXRRequestDecorator *> *)decorators
+- (instancetype)initWithScheme:(NSString *)scheme requestDecorators:(NSArray<RXRSchemeHandlerDecorator *> *)decorators
 {
   if (self = [super init]) {
     _scheme = [scheme copy];
-    _requestDecoarators = [decorators copy];
+    _decorators = [decorators copy];
   }
   return self;
 }
@@ -53,9 +53,8 @@
   }
 
   NSURLRequest *request = [urlSchemeTask.request copy];
-  for (RXRRequestDecorator *decorator in _requestDecoarators) {
-    decorator.originalRequest = request;
-    request = decorator.decoratedRequest;
+  for (RXRSchemeHandlerDecorator *decorator in _decorators) {
+    request = [decorator decoratedRequestFromRequest:request];
   }
 }
 

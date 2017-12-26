@@ -10,17 +10,20 @@
 #import "RXRSchemeHandlerDecorator.h"
 #import "RXRURLSessionDemux.h"
 
-@interface RXRSchemeHandler ()
+@interface RXRSchemeHandler () <NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @property (nonatomic, strong) NSURLSessionTask *dataTask;
 @property (nonatomic, copy) NSArray *modes;
-@property (nonatomic, class) RXRURLSessionDemux *sharedDemux;
+@property (nonatomic, class, readonly) RXRURLSessionDemux *sharedDemux;
+@property (nonatomic, strong) id<WKURLSchemeTask> urlSchemeTask NS_AVAILABLE_IOS(11.0);
 
 @end
 
 @implementation RXRSchemeHandler
 
-- (instancetype)initWithScheme:(NSString *)scheme requestDecorators:(NSArray<RXRSchemeHandlerDecorator *> *)decorators
+- (instancetype)initWithScheme:(NSString *)scheme
+                    decorators:(NSArray<RXRSchemeHandlerDecorator *> *)decorators;
+
 {
   if (self = [super init]) {
     _scheme = [scheme copy];
@@ -56,88 +59,65 @@
   for (RXRSchemeHandlerDecorator *decorator in _decorators) {
     request = [decorator decoratedRequestFromRequest:request];
   }
+
+  // 由于在 iOS9 及一下版本对 WKWebView 缓存支持不好，所有的请求不使用缓存
+  NSMutableURLRequest *newRequest;
+  if ([[[UIDevice currentDevice] systemVersion] compare:@"10.0" options:NSNumericSearch] == NSOrderedAscending) {
+    newRequest = [request mutableCopy];
+    [newRequest setValue:nil forHTTPHeaderField:@"If-None-Match"];
+    [newRequest setValue:nil forHTTPHeaderField:@"If-Modified-Since"];
+    request = [newRequest copy];
+  }
+
+  // Start dataTask
+  NSMutableArray *modes = [NSMutableArray array];
+  [modes addObject:NSDefaultRunLoopMode];
+
+  NSString *currentMode = [[NSRunLoop currentRunLoop] currentMode];
+  if (currentMode != nil && ![currentMode isEqualToString:NSDefaultRunLoopMode]) {
+    [modes addObject:currentMode];
+  }
+  self.modes = modes;
+  self.urlSchemeTask = urlSchemeTask;
+  self.dataTask = [[[self class] sharedDemux] dataTaskWithRequest:request delegate:self modes:self.modes];
+  [_dataTask resume];
 }
 
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask NS_AVAILABLE_IOS(11.0)
 {
-
+  urlSchemeTask = nil;
+  self.urlSchemeTask = nil;
 }
 
-//#pragma mark - NSURLSessionTaskDelegate
-//
-//- (void)URLSession:(NSURLSession *)session
-//              task:(NSURLSessionTask *)task
-//willPerformHTTPRedirection:(NSHTTPURLResponse *)response
-//        newRequest:(NSURLRequest *)request
-// completionHandler:(void (^)(NSURLRequest *_Nullable))completionHandler
-//{
-//  if ([self client] != nil && [self dataTask] == task) {
-//    NSMutableURLRequest *mutableRequest = [request mutableCopy];
-//    [[self class] unmarkRequestAsIgnored:mutableRequest];
-//    [[self client] URLProtocol:self wasRedirectedToRequest:mutableRequest redirectResponse:response];
-//
-//    NSError *error = [[NSError alloc] initWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
-//    [self.dataTask cancel];
-//    [self.client URLProtocol:self didFailWithError:error];
-//  }
-//}
-//
-//- (void)URLSession:(NSURLSession *)session
-//              task:(NSURLSessionTask *)task
-//didCompleteWithError:(nullable NSError *)error
-//{
-//  if ([self client] != nil && (_dataTask == nil || _dataTask == task)) {
-//    if (error == nil) {
-//      [[self client] URLProtocolDidFinishLoading:self];
-//    } else if ([error.domain isEqual:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
-//      // Do nothing.
-//    } else {
-//      [[self client] URLProtocol:self didFailWithError:error];
-//    }
-//  }
-//}
-//
-//#pragma mark - NSURLSessionDataDelegate
-//
-//- (void)URLSession:(NSURLSession *)session
-//          dataTask:(NSURLSessionDataTask *)dataTask
-//didReceiveResponse:(NSURLResponse *)response
-// completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler
-//{
-//  if ([self client] != nil && [self dataTask] != nil && [self dataTask] == dataTask) {
-//    NSHTTPURLResponse *URLResponse = nil;
-//    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-//      URLResponse = (NSHTTPURLResponse *)response;
-//      URLResponse = [NSHTTPURLResponse rxr_responseWithURL:URLResponse.URL
-//                                                statusCode:URLResponse.statusCode
-//                                              headerFields:URLResponse.allHeaderFields
-//                                           noAccessControl:YES];
-//    }
-//
-//    [[self client] URLProtocol:self
-//            didReceiveResponse:URLResponse ?: response
-//            cacheStoragePolicy:NSURLCacheStorageNotAllowed];
-//    completionHandler(NSURLSessionResponseAllow);
-//  }
-//}
-//
-//- (void)URLSession:(NSURLSession *)session
-//          dataTask:(NSURLSessionDataTask *)dataTask
-//    didReceiveData:(NSData *)data
-//{
-//  if ([self client] != nil && [self dataTask] == dataTask) {
-//    [[self client] URLProtocol:self didLoadData:data];
-//  }
-//}
-//
-//- (void)URLSession:(NSURLSession *)session
-//          dataTask:(NSURLSessionDataTask *)dataTask
-// willCacheResponse:(NSCachedURLResponse *)proposedResponse
-// completionHandler:(void (^)(NSCachedURLResponse *_Nullable cachedResponse))completionHandler
-//{
-//  if ([self client] != nil && [self dataTask] == dataTask) {
-//    completionHandler(proposedResponse);
-//  }
-//}
+#pragma mark - NSURLSessionTaskDelegate
+
+- (void)URLSession:(NSURLSession *)session
+              task:(NSURLSessionTask *)task
+didCompleteWithError:(nullable NSError *)error
+{
+  if (error) {
+    [_urlSchemeTask didFailWithError:error];
+  }
+  else {
+    [_urlSchemeTask didFinish];
+  }
+}
+
+#pragma mark - NSURLSessionDataDelegate
+
+- (void)URLSession:(NSURLSession *)session
+          dataTask:(NSURLSessionDataTask *)dataTask
+didReceiveResponse:(NSURLResponse *)response
+ completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler
+{
+  [_urlSchemeTask didReceiveResponse:response];
+}
+
+- (void)URLSession:(NSURLSession *)session
+          dataTask:(NSURLSessionDataTask *)dataTask
+    didReceiveData:(NSData *)data
+{
+  [_urlSchemeTask didReceiveData:data];
+}
 
 @end

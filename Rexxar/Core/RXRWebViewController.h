@@ -7,6 +7,7 @@
 //
 
 #import <WebKit/WebKit.h>
+@class RXRSchemeHandler;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) WKWebView *webView;
 
+- (instancetype)initWithSchemeHandlers:(nullable NSArray<RXRSchemeHandler*>*)handlers NS_DESIGNATED_INITIALIZER;
 - (void)loadRequest:(NSURLRequest *)request;
 
 @end

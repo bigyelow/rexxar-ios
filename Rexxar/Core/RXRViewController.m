@@ -18,6 +18,7 @@
 #import "UIColor+Rexxar.h"
 #import "NSURL+Rexxar.h"
 #import "RXRErrorHandler.h"
+#import "RXRSchemeHandler.h"
 
 @interface RXRViewController ()
 
@@ -33,36 +34,41 @@
 
 #pragma mark - LifeCycle
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (instancetype)initWithSchemeHandlers:(NSArray<RXRSchemeHandler *> *)handlers
 {
-  NSAssert(NO, @"Use initWithURI:htmlFileURL:");
-
-  return [self initWithURI:[NSURL URLWithString:@"http"] htmlFileURL:nil];
-}
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder
-{
-  NSAssert(NO, @"Use initWithURI:htmlFileURL:");
-
-  return [self initWithURI:[NSURL URLWithString:@"http"] htmlFileURL:nil];
-}
-
-- (instancetype)initWithURI:(NSURL *)uri htmlFileURL:(NSURL *)htmlFileURL
-{
-  self = [super initWithNibName:nil bundle:nil];
-  if (self) {
-    _uri = [uri copy];
-    _htmlFileURL = [htmlFileURL copy];
-    _reloadRecord = [NSMutableDictionary dictionary];
-    
-    [RXRCacheFileInterceptor registerInterceptor];
-  }
-  return self;
+  NSAssert(NO, @"Do not use this method");
+  return [self initWithURI:[NSURL URLWithString:@""]];
 }
 
 - (instancetype)initWithURI:(NSURL *)uri
 {
   return [self initWithURI:uri htmlFileURL:nil];
+}
+
+- (instancetype)initWithURI:(NSURL *)uri htmlFileURL:(NSURL *)htmlFileURL
+{
+  self = [self initWithURI:uri htmlFileURL:htmlFileURL schemeHandlers:nil];
+  if (self) {
+    _uri = [uri copy];
+    _htmlFileURL = [htmlFileURL copy];
+    _reloadRecord = [NSMutableDictionary dictionary];
+
+    [RXRCacheFileInterceptor registerInterceptor];
+  }
+  return self;
+}
+
+- (instancetype)initWithURI:(NSURL *)uri htmlFileURL:(NSURL *)htmlFileURL schemeHandlers:(NSArray<RXRSchemeHandler*>*)handlers
+{
+  self = [super initWithSchemeHandlers:handlers];
+  if (self) {
+    _uri = [uri copy];
+    _htmlFileURL = [htmlFileURL copy];
+    _reloadRecord = [NSMutableDictionary dictionary];
+
+    [RXRCacheFileInterceptor registerInterceptor];
+  }
+  return self;
 }
 
 - (void)viewDidLoad

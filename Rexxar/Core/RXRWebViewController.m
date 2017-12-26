@@ -13,6 +13,7 @@
 #import "RXRRouteManager.h"
 #import "RXRConfig+Rexxar.h"
 #import "RXRErrorHandler.h"
+#import "RXRSchemeHandler.h"
 
 @interface RXRWebViewController () <WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate>
 
@@ -24,7 +25,19 @@
 @implementation RXRWebViewController
 @synthesize webView = _webView;
 
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+  NSAssert(NO, @"Use initWithSchemeHandlers:");
+  return [self initWithSchemeHandlers:nil];
+}
+
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+  NSAssert(NO, @"Use initWithSchemeHandlers:");
+  return [self initWithSchemeHandlers:nil];
+}
+
+- (instancetype)initWithSchemeHandlers:(NSArray<RXRSchemeHandler*>*)handlers
 {
   self = [super initWithNibName:nil bundle:nil];
   if (self != nil) {
@@ -40,6 +53,12 @@
     // iOS10
     if ([webConfiguration respondsToSelector:@selector(dataDetectorTypes)]) {
       webConfiguration.dataDetectorTypes = WKDataDetectorTypeLink | WKDataDetectorTypePhoneNumber;
+    }
+
+    if (@available(iOS 11.0, *)) {
+      for (RXRSchemeHandler *handler in handlers) {
+        [webConfiguration setURLSchemeHandler:handler forURLScheme:handler.scheme];
+      }
     }
 
     _webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];

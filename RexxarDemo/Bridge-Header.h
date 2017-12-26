@@ -15,4 +15,5 @@
 #import "RXRNavMenuWidget.h"
 #import "RXRGeoContainerAPI.h"
 #import "RXRLogContainerAPI.h"
+#import "RXRRequestSchemeHandlerDecorator.h"
 

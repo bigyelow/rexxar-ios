@@ -14,6 +14,7 @@
 		713F6E8B1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h in Headers */ = {isa = PBXBuildFile; fileRef = 713F6E891FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h */; };
 		713F6E8C1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m in Sources */ = {isa = PBXBuildFile; fileRef = 713F6E8A1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m */; };
 		713F6E901FF21ED000A9F7C1 /* RXRDecorator.h in Headers */ = {isa = PBXBuildFile; fileRef = 713F6E8F1FF21ED000A9F7C1 /* RXRDecorator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		713F6E941FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.m in Sources */ = {isa = PBXBuildFile; fileRef = 713F6E931FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.m */; };
 		719255591DE6E055009F0687 /* RXRURLRequestSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */; };
 		7192555A1DE6E055009F0687 /* RXRURLRequestSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */; };
 		7196C5EE1FB152D400E2B57C /* RXRLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7196C5ED1FB152D400E2B57C /* RXRLogger.h */; };
@@ -118,6 +119,8 @@
 		713F6E891FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRSchemeHandlerDecorator.h; sourceTree = "<group>"; };
 		713F6E8A1FF1FBE300A9F7C1 /* RXRSchemeHandlerDecorator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RXRSchemeHandlerDecorator.m; sourceTree = "<group>"; };
 		713F6E8F1FF21ED000A9F7C1 /* RXRDecorator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRDecorator.h; sourceTree = "<group>"; };
+		713F6E921FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRRequestSchemeHandlerDecorator.h; sourceTree = "<group>"; };
+		713F6E931FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RXRRequestSchemeHandlerDecorator.m; sourceTree = "<group>"; };
 		719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RXRURLRequestSerialization.h; sourceTree = "<group>"; };
 		719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RXRURLRequestSerialization.m; sourceTree = "<group>"; };
 		7196C5EC1FB06C6800E2B57C /* RXRDataValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRDataValidator.h; sourceTree = "<group>"; };
@@ -255,6 +258,15 @@
 			path = RXRSchemeHandler;
 			sourceTree = "<group>";
 		};
+		713F6E911FF24FCB00A9F7C1 /* SchemeHandler */ = {
+			isa = PBXGroup;
+			children = (
+				713F6E921FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.h */,
+				713F6E931FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.m */,
+			);
+			path = SchemeHandler;
+			sourceTree = "<group>";
+		};
 		98B47AF91BF1E0E00087735C = {
 			isa = PBXGroup;
 			children = (
@@ -294,6 +306,7 @@
 		98B47B131BF1E0F20087735C /* RexxarDemo */ = {
 			isa = PBXGroup;
 			children = (
+				713F6E911FF24FCB00A9F7C1 /* SchemeHandler */,
 				A3249A061D66EF27006CCCCB /* Library */,
 				A39964791D549DB700813A60 /* Widget */,
 				A399647A1D549DB700813A60 /* ContainerAPI */,
@@ -727,6 +740,7 @@
 				A35E72551D8004D400D38BC0 /* RXRNavMenuWidget.m in Sources */,
 				A3249A1A1D66F941006CCCCB /* FullRXRViewController.swift in Sources */,
 				A35E72521D8004D400D38BC0 /* RXRMenuItem.m in Sources */,
+				713F6E941FF2502000A9F7C1 /* RXRRequestSchemeHandlerDecorator.m in Sources */,
 				A3249A0F1D66EF27006CCCCB /* UIColor+helper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

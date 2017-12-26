@@ -35,8 +35,15 @@ class RoutesViewController: UITableViewController {
     let uri = URIs[(indexPath as NSIndexPath).row]
     if (indexPath as NSIndexPath).row == 0 {
 
-      let controller = FullRXRViewController(uri: uri)
-      navigationController?.pushViewController(controller, animated: true)
+      if #available(iOS 11, *) {
+        let decorator = RXRSchemeHandlerDecorator()
+        let requestSchemeHandler = RXRSchemeHandler(scheme: "rexxar-request", decorators: [decorator])
+        let controller = FullRXRViewController(uri: uri, htmlFileURL: nil, schemeHandlers: [requestSchemeHandler])
+        navigationController?.pushViewController(controller, animated: true)
+      } else {
+        let controller = FullRXRViewController(uri: uri)
+        navigationController?.pushViewController(controller, animated: true)
+      }
     } else if (indexPath as NSIndexPath).row == 1 {
       let controller = PartialRexxarViewController(URI: uri)
       navigationController?.pushViewController(controller, animated: true)

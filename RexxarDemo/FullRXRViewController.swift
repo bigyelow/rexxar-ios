@@ -29,14 +29,23 @@ class FullRXRViewController: RXRViewController {
     RXRNSURLProtocol.registerRXRProtocolClass(RXRContainerInterceptor.self)
 
     // Decorators
-    let headers = ["Customer-Authorization": "Bearer token"]
-    let parameters = ["apikey": "apikey value"]
-    let requestDecorator = RXRRequestDecorator(headers: headers, parameters: parameters)
-    RXRRequestInterceptor.decorators = [requestDecorator]
-    RXRNSURLProtocol.registerRXRProtocolClass(RXRRequestInterceptor.self)
+    if #available(iOS 11, *) {
+
+    }
+    else {
+      let headers = ["Customer-Authorization": "Bearer token"]
+      let parameters = ["apikey": "apikey value"]
+      let requestDecorator = RXRRequestDecorator(headers: headers, parameters: parameters)
+      RXRRequestInterceptor.decorators = [requestDecorator]
+      RXRNSURLProtocol.registerRXRProtocolClass(RXRRequestInterceptor.self)
+    }
   }
 
   deinit {
+    if #available(iOS 11, *) {
+      return;
+    }
+
     RXRNSURLProtocol.unregisterRXRProtocolClass(RXRContainerInterceptor.self)
     RXRNSURLProtocol.unregisterRXRProtocolClass(RXRRequestInterceptor.self)
   }

@@ -54,8 +54,13 @@
     _uri = [uri copy];
     _htmlFileURL = [htmlFileURL copy];
     _reloadRecord = [NSMutableDictionary dictionary];
-    
-    [RXRCacheFileInterceptor registerInterceptor];
+
+    if (@available(iOS 11.0, *)) {
+      
+    }
+    else {
+      [RXRCacheFileInterceptor registerInterceptor];
+    }
   }
   return self;
 }

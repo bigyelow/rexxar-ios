@@ -22,22 +22,30 @@ class FullRXRViewController: RXRViewController {
     let navMenuWidget = RXRNavMenuWidget()
     widgets = [titleWidget, alertDialogWidget, pullRefreshWidget, toastWidget, navMenuWidget]
 
-    // ContainerAPIs
-    let geoContainerAPI = RXRGeoContainerAPI()
-    let logContainerAPI = RXRLogContainerAPI()
-    RXRContainerInterceptor.containerAPIs = [geoContainerAPI, logContainerAPI]
-    RXRNSURLProtocol.registerRXRProtocolClass(RXRContainerInterceptor.self)
+    if #available(iOS 11, *) {
+      print("iOS 11")
+    } else {
+      // ContainerAPIs
+      let geoContainerAPI = RXRGeoContainerAPI()
+      let logContainerAPI = RXRLogContainerAPI()
+      RXRContainerInterceptor.containerAPIs = [geoContainerAPI, logContainerAPI]
+      RXRNSURLProtocol.registerRXRProtocolClass(RXRContainerInterceptor.self)
 
-    // Decorators
-    let headers = ["Customer-Authorization": "Bearer token"]
-    let parameters = ["apikey": "apikey value"]
-    let requestDecorator = RXRRequestDecorator(headers: headers, parameters: parameters)
-    RXRRequestInterceptor.decorators = [requestDecorator]
-    RXRNSURLProtocol.registerRXRProtocolClass(RXRRequestInterceptor.self)
+      // Decorators
+      let headers = ["Customer-Authorization": "Bearer token"]
+      let parameters = ["apikey": "apikey value"]
+      let requestDecorator = RXRRequestDecorator(headers: headers, parameters: parameters)
+      RXRRequestInterceptor.decorators = [requestDecorator]
+      RXRNSURLProtocol.registerRXRProtocolClass(RXRRequestInterceptor.self)
+    }
   }
 
   deinit {
-    RXRNSURLProtocol.unregisterRXRProtocolClass(RXRContainerInterceptor.self)
-    RXRNSURLProtocol.unregisterRXRProtocolClass(RXRRequestInterceptor.self)
+    if #available(iOS 11, *) {
+      print("iOS 11")
+    } else {
+      RXRNSURLProtocol.unregisterRXRProtocolClass(RXRContainerInterceptor.self)
+      RXRNSURLProtocol.unregisterRXRProtocolClass(RXRRequestInterceptor.self)
+    }
   }
 }

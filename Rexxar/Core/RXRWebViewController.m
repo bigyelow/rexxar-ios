@@ -13,6 +13,7 @@
 #import "RXRRouteManager.h"
 #import "RXRConfig+Rexxar.h"
 #import "RXRErrorHandler.h"
+#import "Rexxar/Rexxar-Swift.h"
 
 @interface RXRWebViewController () <WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate>
 
@@ -164,7 +165,16 @@
   webView.UIDelegate = self;
   webView.scrollView.delegate = self;
 
-  [self _rxr_registerWebViewCustomSchemes:webView];
+  if (@available(iOS 11.0, *)) {
+    if (!RXRConfig.customURLScheme) {
+      NSAssert(NO, @"Should set `customURLScheme`");
+      return nil;
+    }
+    [self.webView.configuration setURLSchemeHandler:[RXRURLSchemeHandler new] forURLScheme:RXRConfig.customURLScheme];
+  }
+  else {
+    [self _rxr_registerWebViewCustomSchemes:webView];
+  }
 
   return webView;
 }

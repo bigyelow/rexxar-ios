@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface RXRConfig : NSObject
 
+@property (nullable, class, nonatomic, copy) NSString *customURLScheme API_AVAILABLE(ios(11.0));
+
 /**
  设置 `RXRLogger`，调用者需要实现 `rexxarDidLogWithLogObject:` 方法。
  */

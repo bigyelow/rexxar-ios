@@ -13,6 +13,7 @@
 
 @implementation RXRConfig
 
+static NSString *sCustomURLScheme;
 static NSString *sRXRProtocolScheme;
 static NSString *sRXRProtocolHost;
 static NSString *sRXRUserAgent;
@@ -46,6 +47,16 @@ static NSString * const DefaultRXRHost = @"rexxar-container";
 + (void)setErrorHandler:(id<RXRErrorHandler>)errorHandler
 {
   sErrorHandler = errorHandler;
+}
+
++ (void)setCustomURLScheme:(NSString *)customURLScheme
+{
+  sCustomURLScheme = customURLScheme;
+}
+
++ (NSString *)customURLScheme
+{
+  return sCustomURLScheme ?: @"https";
 }
 
 + (NSInteger)reloadLimitWhen404

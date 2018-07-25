@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7132597C1E713C4500A6D7EA /* RXRRequestInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 7132597A1E713C4500A6D7EA /* RXRRequestInterceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7132597D1E713C4500A6D7EA /* RXRRequestInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 7132597B1E713C4500A6D7EA /* RXRRequestInterceptor.m */; };
+		7156FFFE2107169D00C71001 /* RXRURLSchemeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7156FFFD2107169D00C71001 /* RXRURLSchemeHandler.swift */; };
 		719255591DE6E055009F0687 /* RXRURLRequestSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */; };
 		7192555A1DE6E055009F0687 /* RXRURLRequestSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */; };
 		7196C5EE1FB152D400E2B57C /* RXRLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7196C5ED1FB152D400E2B57C /* RXRLogger.h */; };
@@ -109,6 +110,7 @@
 		6143A5FB8F8F1D086AC883C1 /* libPods-RexxarDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RexxarDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7132597A1E713C4500A6D7EA /* RXRRequestInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RXRRequestInterceptor.h; sourceTree = "<group>"; };
 		7132597B1E713C4500A6D7EA /* RXRRequestInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RXRRequestInterceptor.m; sourceTree = "<group>"; };
+		7156FFFD2107169D00C71001 /* RXRURLSchemeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RXRURLSchemeHandler.swift; sourceTree = "<group>"; };
 		719255571DE6E055009F0687 /* RXRURLRequestSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RXRURLRequestSerialization.h; sourceTree = "<group>"; };
 		719255581DE6E055009F0687 /* RXRURLRequestSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RXRURLRequestSerialization.m; sourceTree = "<group>"; };
 		7196C5EC1FB06C6800E2B57C /* RXRDataValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RXRDataValidator.h; sourceTree = "<group>"; };
@@ -236,6 +238,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		7156FFFC2107145D00C71001 /* WKURLSchemeHandler */ = {
+			isa = PBXGroup;
+			children = (
+				7156FFFD2107169D00C71001 /* RXRURLSchemeHandler.swift */,
+			);
+			path = WKURLSchemeHandler;
+			sourceTree = "<group>";
+		};
 		98B47AF91BF1E0E00087735C = {
 			isa = PBXGroup;
 			children = (
@@ -321,6 +331,7 @@
 		A35E71E11D7FCA0200D38BC0 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				7156FFFC2107145D00C71001 /* WKURLSchemeHandler */,
 				A35E720A1D7FCB0B00D38BC0 /* Extension */,
 				A35E71E21D7FCA0200D38BC0 /* RXRCacheFileInterceptor.h */,
 				A35E71E31D7FCA0200D38BC0 /* RXRCacheFileInterceptor.m */,
@@ -601,6 +612,7 @@
 				TargetAttributes = {
 					98B47B021BF1E0E00087735C = {
 						CreatedOnToolsVersion = 7.1;
+						LastSwiftMigration = 0940;
 					};
 					98B47B111BF1E0F20087735C = {
 						CreatedOnToolsVersion = 7.1;
@@ -691,6 +703,7 @@
 				98BCCFB91E698BAA007C2100 /* NSHTTPURLResponse+Rexxar.m in Sources */,
 				A35E72231D7FCB0B00D38BC0 /* NSData+RXRDigest.m in Sources */,
 				A35E722D1D7FCB0B00D38BC0 /* UIColor+Rexxar.m in Sources */,
+				7156FFFE2107169D00C71001 /* RXRURLSchemeHandler.swift in Sources */,
 				71F7C34D1FEB919100243719 /* RXRConfig+Rexxar.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -848,6 +861,7 @@
 		98B47B0C1BF1E0E00087735C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -860,12 +874,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.douban.Rexxar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		98B47B0D1BF1E0E00087735C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -878,6 +895,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.douban.Rexxar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -919,6 +937,7 @@
 		B90EBEC41BFEAA830055D477 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = RexxarTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -930,6 +949,7 @@
 		B90EBEC51BFEAA830055D477 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = RexxarTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

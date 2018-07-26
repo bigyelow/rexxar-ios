@@ -55,7 +55,9 @@
     _htmlFileURL = [htmlFileURL copy];
     _reloadRecord = [NSMutableDictionary dictionary];
 
-    if (@available(iOS 11.0, *) == NO) {
+    if (@available(iOS 11.0, *)) {
+    }
+    else {
       [RXRCacheFileInterceptor registerInterceptor];
     }
   }
@@ -93,7 +95,9 @@
 
 - (void)dealloc
 {
-  if (@available(iOS 11.0, *) == NO) {
+  if (@available(iOS 11.0, *)) {
+  }
+  else {
     [RXRCacheFileInterceptor unregisterInterceptor];
   }
   [self _rxr_onPageDestroy];

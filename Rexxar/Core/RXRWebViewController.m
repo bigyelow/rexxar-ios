@@ -104,7 +104,12 @@
       [_webView loadRequest:[NSURLRequest requestWithURL:URL]];
     }
   } else {
-    [_webView loadRequest:request];
+    if (@available(iOS 11.0, *)) {
+      [_webView loadRequest:request.customMainRequest];
+    }
+    else {
+      [_webView loadRequest:request];
+    }
   }
 }
 
@@ -160,17 +165,20 @@
     webConfiguration.dataDetectorTypes = WKDataDetectorTypeLink | WKDataDetectorTypePhoneNumber;
   }
 
+  if (@available(iOS 11.0, *)) {
+    if (!RXRConfig.rexxarHttpScheme) {
+      NSAssert(NO, @"Should set `rexxarHttpScheme`");
+      return nil;
+    }
+    [webConfiguration setURLSchemeHandler:[RXRURLSchemeHandler new] forURLScheme:RXRConfig.rexxarHttpScheme];
+  }
+
   WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];
   webView.navigationDelegate = self;
   webView.UIDelegate = self;
   webView.scrollView.delegate = self;
 
   if (@available(iOS 11.0, *)) {
-    if (!RXRConfig.customURLScheme) {
-      NSAssert(NO, @"Should set `customURLScheme`");
-      return nil;
-    }
-    [self.webView.configuration setURLSchemeHandler:[RXRURLSchemeHandler new] forURLScheme:RXRConfig.customURLScheme];
   }
   else {
     [self _rxr_registerWebViewCustomSchemes:webView];

@@ -28,19 +28,21 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
   }
 
   public func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-    guard let rexxarURL = urlSchemeTask.request.url, let originalScheme = rexxarURL.scheme?.originalScheme else {
+    guard let rexxarURL = urlSchemeTask.request.url, let httpScheme = rexxarURL.scheme?.httpScheme else {
       assert(false, "URL or scheme error")
       return
     }
 
     guard var comp = URLComponents(url: rexxarURL, resolvingAgainstBaseURL: true) else { return }
-    comp.scheme = originalScheme
+    comp.scheme = httpScheme
 
     // If is `main request`, fetch data directly and return it to WKWebView by calling urlSchemeTask's callback.
     if let url = comp.url,
       let items = comp.queryItems,
       items.filter({ (item) -> Bool in return item.name == isMainRequestKey && item.value == "1"}).count > 0 {
       sendSimpleRequest(with: url, for: urlSchemeTask)
+    } else if false  {
+      print("local html")
     } else if comp.url != nil {  // If is `js request` from html, check if it needs some decoration.
       // Replace scheme, host, port if needed
       if var queryItems = comp.queryItems {
@@ -65,10 +67,7 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
       print("js_request_url = \(comp.url?.absoluteString ?? "")")
 
       if let url = comp.url, let delegate = delegate {
-        let request = URLRequest(url: url,
-                                 cachePolicy: urlSchemeTask.request.cachePolicy,
-                                 timeoutInterval: urlSchemeTask.request.timeoutInterval)
-        delegate.sendRequest(request) { [weak self] (data, response, error) in
+        delegate.sendRequest(urlSchemeTask.request.copied(with: url)) { [weak self] (data, response, error) in
           self?.complete(with: data, response: response, error: error, for: urlSchemeTask)
         }
       }
@@ -102,25 +101,16 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
 }
 
 @available(iOS 11.0, *)
-fileprivate extension String {
-  var originalScheme: String? {
-    if let rexttp = RXRConfig.rexxarHttpScheme, self == rexttp {
-      return "http"
-    } else if let rexttps = RXRConfig.rexxarHttpsScheme, self == rexttps {
-      return "https"
-    } else {
-      return nil
-    }
-  }
-}
-
-@available(iOS 11.0, *)
 @objc public extension NSURLRequest {
   public var customMainRequest: NSURLRequest? {
     guard let url = url else { return nil }
     guard let comp = NSURLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
 
     // Change scheme
+    if comp.scheme != nil && !comp.scheme!.isHttpSet {
+      assert(false, "Main request should be scheme of `http` or `https`")
+      return nil
+    }
     comp.scheme = RXRConfig.rexxarHttpScheme
 
     // Add is_main_request=1
@@ -133,6 +123,76 @@ fileprivate extension String {
     }
 
     guard let customURL = comp.url else { return nil }
-    return NSURLRequest(url: customURL)
+    return copied(with: customURL)
+  }
+
+  public var customLocalFileRequest: NSURLRequest? {
+    guard let url = url else { return nil }
+    guard var comp = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
+
+    if comp.scheme != nil && !comp.scheme!.isLocalScheme {
+      assert(false, "Local file request should be scheme of `file`")
+      return nil
+    }
+
+    // change file:// to rexttp(s)://
+    if var queryItems = comp.queryItems {
+      for item in queryItems {
+        if item.name == RXRLocalFileSchemeKey {
+          comp.scheme = item.value?.rexttpScheme
+          queryItems.remove(at: queryItems.index(of: item)!)
+          comp.queryItems = queryItems.count > 0 ? queryItems : nil
+        }
+      }
+    }
+
+    guard let customURL = comp.url else { return nil }
+    return copied(with: customURL)
+  }
+
+  fileprivate func copied(with url: URL) -> NSURLRequest {
+    return URLRequest(url: url, cachePolicy: self.cachePolicy, timeoutInterval: self.timeoutInterval) as NSURLRequest
+  }
+}
+
+@available(iOS 11.0, *)
+fileprivate extension URLRequest {
+  func copied(with url: URL) -> URLRequest {
+    return (self as NSURLRequest).copied(with: url) as URLRequest
+  }
+}
+
+@available(iOS 11.0, *)
+fileprivate extension String {
+  /// rexttp, rexttps to http, https
+  var httpScheme: String? {
+    if let rexttp = RXRConfig.rexxarHttpScheme, self == rexttp {
+      return "http"
+    } else if let rexttps = RXRConfig.rexxarHttpsScheme, self == rexttps {
+      return "https"
+    } else {
+      assert(false, "Need configure `rexxarHttpScheme` or `rexxarHttpsScheme`")
+      return nil
+    }
+  }
+
+  /// http, https, file to rexttp, rexttps
+  var rexttpScheme: String? {
+    if let rexttp = RXRConfig.rexxarHttpScheme, self.lowercased() == "http" {
+      return rexttp
+    } else if let rexttps = RXRConfig.rexxarHttpScheme, self.lowercased() == "https" {
+      return rexttps
+    } else {
+      assert(false, "Only support http or https")
+      return nil
+    }
+  }
+
+  var isHttpSet: Bool {
+    return ["http", "https"].contains(self.lowercased())
+  }
+
+  var isLocalScheme: Bool {
+    return self.lowercased() == "file"
   }
 }

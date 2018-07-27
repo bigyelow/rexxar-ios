@@ -11,6 +11,8 @@
 #import "RXRConfig.h"
 #import "RXRRouteManager.h"
 
+const NSString *RXRLocalFileSchemeKey = @"rexxar_scheme";
+
 @implementation RXRConfig
 
 static NSString *sRexxarHttpScheme;

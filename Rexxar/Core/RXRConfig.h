@@ -12,6 +12,8 @@
 @protocol RXRLogger;
 @protocol RXRErrorHandler;
 
+FOUNDATION_EXPORT const NSString *RXRLocalFileSchemeKey;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**

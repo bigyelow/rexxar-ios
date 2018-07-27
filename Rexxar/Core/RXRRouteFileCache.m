@@ -8,7 +8,6 @@
 
 #import "RXRRouteFileCache.h"
 #import "RXRConfig.h"
-
 #import "RXRLogger.h"
 #import "NSData+RXRDigest.h"
 #import "RXRLogger.h"
@@ -180,7 +179,14 @@ static NSString * const RoutesMapFile = @"routes.json";
 {
   NSString *md5 = [[url.absoluteString dataUsingEncoding:NSUTF8StringEncoding] md5];
   NSString *filename = [self.cachePath stringByAppendingPathComponent:md5];
-  return [filename stringByAppendingPathExtension:url.pathExtension];
+  filename = [filename stringByAppendingPathExtension:url.pathExtension];
+
+  NSString *query = [self _rxr_queryForURL:url];
+  if (query) {
+    filename = [filename stringByAppendingString:query];
+  }
+
+  return filename;
 }
 
 - (NSString *)_rxr_resourceRouteFilePathForRemoteURL:(NSURL *)url
@@ -192,7 +198,33 @@ static NSString * const RoutesMapFile = @"routes.json";
   } else {
     filename = url.path;
   }
+
+  NSString *query = [self _rxr_queryForURL:url];
+  if (query) {
+    filename = [filename stringByAppendingString:query];
+  }
+
   return [self.resourcePath stringByAppendingPathComponent:filename];
+}
+
+- (NSString *)_rxr_queryForURL:(NSURL *)url
+{
+  if (@available(iOS 11.0, *)) {
+    NSString *rexxarScheme;
+    if ([url.scheme.lowercaseString isEqualToString:@"http"]) {
+      rexxarScheme = RXRConfig.rexxarHttpScheme;
+    }
+    else if ([url.scheme.lowercaseString isEqualToString:@"https"]) {
+      rexxarScheme = RXRConfig.rexxarHttpsScheme;
+    }
+    else {
+      NSAssert(NO, @"Invalide scheme for `url`");
+      return nil;
+    }
+    return [NSString stringWithFormat:@"?%@=%@", RXRLocalFileSchemeKey, rexxarScheme];
+  }
+
+  return nil;
 }
 
 - (NSUInteger)_rxr_fileSizeAtPath:(NSString *)path

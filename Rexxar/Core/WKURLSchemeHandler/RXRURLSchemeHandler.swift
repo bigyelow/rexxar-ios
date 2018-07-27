@@ -15,14 +15,14 @@ private let portKey = "_rexttp_port"  // Server needs support this query_name.
 
 @available(iOS 11.0, *)
 @objc public protocol RXRURLSchemeHandlerDelegate {
-  func sendRequest(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void)
+  func sendRequest(_ request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void)
 }
 
 @available(iOS 11.0, *)
 public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
   private weak var delegate: RXRURLSchemeHandlerDelegate?
 
-  public init(delegate: RXRURLSchemeHandlerDelegate) {
+  @objc public init(delegate: RXRURLSchemeHandlerDelegate?) {
     self.delegate = delegate
     super.init()
   }
@@ -62,10 +62,13 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
       }
 
       // Decorate js request if needed
-      print("js request url = \(comp.url?.absoluteString ?? "")")
+      print("js_request_url = \(comp.url?.absoluteString ?? "")")
 
       if let url = comp.url, let delegate = delegate {
-        delegate.sendRequest(with: url) { [weak self] (data, response, error) in
+        let request = URLRequest(url: url,
+                                 cachePolicy: urlSchemeTask.request.cachePolicy,
+                                 timeoutInterval: urlSchemeTask.request.timeoutInterval)
+        delegate.sendRequest(request) { [weak self] (data, response, error) in
           self?.complete(with: data, response: response, error: error, for: urlSchemeTask)
         }
       }

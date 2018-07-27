@@ -8,6 +8,8 @@
 
 #import <WebKit/WebKit.h>
 
+@protocol RXRURLSchemeHandlerDelegate;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol RXRWebViewDelegate <NSObject>
@@ -25,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) WKWebView *webView;
 
 - (void)loadRequest:(NSURLRequest *)request;
+- (id<RXRURLSchemeHandlerDelegate>)urlSchemeHandler API_AVAILABLE(ios(11.0));
 
 @end
 

@@ -31,7 +31,7 @@
   [self setAutomaticallyAdjustsScrollViewInsets:NO];
   self.delegate = self;
 
-  _webView = [self _frd_createWebView];
+  _webView = [self _rxr_createWebView];
   [self.view addSubview:_webView];
 }
 
@@ -41,7 +41,7 @@
 
   if (_webView.URL == nil) {  // means webContentProcess is terminated
     [_webView removeFromSuperview];
-    _webView = [self _frd_createWebView];
+    _webView = [self _rxr_createWebView];
     [self.view addSubview:_webView];
     [self.view setNeedsLayout];
   }
@@ -113,6 +113,14 @@
   }
 }
 
+#pragma mark - Methods should be implement by subclass
+
+- (id<RXRURLSchemeHandlerDelegate>)urlSchemeHandler
+{
+  NSAssert(NO, @"Subclass should implement this method");
+  return nil;
+}
+
 #pragma mark - NSURLProtocol
 
 /**
@@ -146,7 +154,7 @@
   return instance;
 }
 
-- (WKWebView *)_frd_createWebView
+- (WKWebView *)_rxr_createWebView
 {
   WKWebViewConfiguration *webConfiguration = [[WKWebViewConfiguration alloc] init];
   webConfiguration.mediaPlaybackRequiresUserAction = NO;
@@ -170,7 +178,7 @@
       NSAssert(NO, @"Should set `rexxarHttpScheme`");
       return nil;
     }
-    [webConfiguration setURLSchemeHandler:[RXRURLSchemeHandler new] forURLScheme:RXRConfig.rexxarHttpScheme];
+    [webConfiguration setURLSchemeHandler:[[RXRURLSchemeHandler alloc] initWithDelegate:[self urlSchemeHandler]] forURLScheme:RXRConfig.rexxarHttpScheme];
   }
 
   WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];

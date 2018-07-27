@@ -9,6 +9,9 @@
 import UIKit
 
 private let isMainRequestKey = "is_main_request"
+private let schemeKey = "_rexttp_scheme"  // Server needs support this query_name.
+private let hostKey = "_rexttp_host"  // Server needs support this query_name.
+private let portKey = "_rexttp_port"  // Server needs support this query_name.
 
 @available(iOS 11.0, *)
 public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
@@ -21,29 +24,59 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
     guard var comp = URLComponents(url: rexxarURL, resolvingAgainstBaseURL: true) else { return }
     comp.scheme = originalScheme
 
-    // check if is main request
-    if let url = comp.url, let items = comp.queryItems, items.filter({ (item) -> Bool in
-      return item.name == isMainRequestKey && item.value == "1"
-    }).count > 0 {
-      URLSession(configuration: URLSessionConfiguration.default).dataTask(with: url) { (data, response, error) in
-        if let error = error {
-          urlSchemeTask.didFailWithError(error)
-          return
+    // If is `main request`, fetch data directly and return it to WKWebView by calling urlSchemeTask's callback.
+    if let url = comp.url,
+      let items = comp.queryItems,
+      items.filter({ (item) -> Bool in return item.name == isMainRequestKey && item.value == "1"}).count > 0 {
+      sendSimpleRequest(with: url, for: urlSchemeTask)
+    } else if comp.url != nil {  // If is `js request` from html, check if it needs some decoration.
+      // replace scheme, host, port if needed
+      if var queryItems = comp.queryItems {
+        for item in queryItems {
+          if item.name == hostKey {
+            comp.host = item.value
+            queryItems.remove(at: queryItems.index(of: item)!)
+            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+          } else if item.name == schemeKey {
+            comp.scheme = item.value
+            queryItems.remove(at: queryItems.index(of: item)!)
+            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+          } else if item.name == portKey && item.value != nil {
+            comp.port = Int(item.value!)
+            queryItems.remove(at: queryItems.index(of: item)!)
+            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+          }
         }
+      }
 
-        if let response = response {
-          urlSchemeTask.didReceive(response)
-        }
-        if let data = data {
-          urlSchemeTask.didReceive(data)
-        }
-        urlSchemeTask.didFinish()
-      }.resume()
+      // handle url
+      print("js request url = \(comp.url?.absoluteString ?? "")")
+
+      if let url = comp.url {
+        sendSimpleRequest(with: url, for: urlSchemeTask)
+      }
     }
   }
 
   public func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
 
+  }
+
+  private func sendSimpleRequest(with url: URL, for urlSchemeTask: WKURLSchemeTask) {
+    URLSession(configuration: URLSessionConfiguration.default).dataTask(with: url) { (data, response, error) in
+      if let error = error {
+        urlSchemeTask.didFailWithError(error)
+        return
+      }
+
+      if let response = response {
+        urlSchemeTask.didReceive(response)
+      }
+      if let data = data {
+        urlSchemeTask.didReceive(data)
+      }
+      urlSchemeTask.didFinish()
+      }.resume()
   }
 }
 

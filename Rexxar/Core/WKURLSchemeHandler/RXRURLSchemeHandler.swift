@@ -28,39 +28,57 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
   }
 
   public func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-    guard let rexxarURL = urlSchemeTask.request.url, let httpScheme = rexxarURL.scheme?.httpScheme else {
-      assert(false, "URL or scheme error")
+    guard let rexxarURL = urlSchemeTask.request.url else {
+      assert(false)
       return
     }
 
     guard var comp = URLComponents(url: rexxarURL, resolvingAgainstBaseURL: true) else { return }
-    comp.scheme = httpScheme
 
     // If is `main request`, fetch data directly and return it to WKWebView by calling urlSchemeTask's callback.
-    if let url = comp.url,
-      let items = comp.queryItems,
+    if let items = comp.queryItems,
       items.filter({ (item) -> Bool in return item.name == isMainRequestKey && item.value == "1"}).count > 0 {
+
+      comp.scheme = comp.scheme?.httpScheme
+      guard let url = comp.url else { return }
       sendSimpleRequest(with: url, for: urlSchemeTask)
-    } else if false  {
-      print("local html")
+
+    } else if let items = comp.queryItems,
+      items.filter({ (item) -> Bool in return item.name == RXRLocalFileSchemeKey }).count > 0 { // If is request for loading local html
+
+      comp.queryItems?.removeItemByName(RXRLocalFileSchemeKey)
+
+      // change scheme to `file`
+      comp.scheme = "file"
+
+      // load data from local
+      guard let url = comp.url, FileManager.default.fileExists(atPath: url.absoluteString) else { return }
+
+      do {
+        let data = try Data(contentsOf: url)
+        complete(with: data, response: nil, error: nil, for: urlSchemeTask)
+      }
+      catch {
+        assert(false, "Load local html file error")
+      }
+
     } else if comp.url != nil {  // If is `js request` from html, check if it needs some decoration.
+
       // Replace scheme, host, port if needed
-      if var queryItems = comp.queryItems {
+      if let queryItems = comp.queryItems {
         for item in queryItems {
           if item.name == hostKey {
             comp.host = item.value
-            queryItems.remove(at: queryItems.index(of: item)!)
-            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+            comp.queryItems?.remove(item, ignoreItemValue: false)
           } else if item.name == schemeKey {
             comp.scheme = item.value
-            queryItems.remove(at: queryItems.index(of: item)!)
-            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+            comp.queryItems?.remove(item, ignoreItemValue: false)
           } else if item.name == portKey && item.value != nil {
             comp.port = Int(item.value!)
-            queryItems.remove(at: queryItems.index(of: item)!)
-            comp.queryItems = queryItems.count > 0 ? queryItems : nil
+            comp.queryItems?.remove(item, ignoreItemValue: false)
           }
         }
+        comp.queryItems = (comp.queryItems ?? []).count > 0 ? comp.queryItems : nil
       }
 
       // Decorate js request if needed
@@ -136,14 +154,9 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
     }
 
     // change file:// to rexttp(s)://
-    if var queryItems = comp.queryItems {
-      for item in queryItems {
-        if item.name == RXRLocalFileSchemeKey {
-          comp.scheme = item.value?.rexttpScheme
-          queryItems.remove(at: queryItems.index(of: item)!)
-          comp.queryItems = queryItems.count > 0 ? queryItems : nil
-        }
-      }
+    for item in comp.queryItems ?? [] where item.name == RXRLocalFileSchemeKey {
+      comp.scheme = item.value
+      break
     }
 
     guard let customURL = comp.url else { return nil }
@@ -159,6 +172,22 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
 fileprivate extension URLRequest {
   func copied(with url: URL) -> URLRequest {
     return (self as NSURLRequest).copied(with: url) as URLRequest
+  }
+}
+
+@available(iOS 11.0, *)
+fileprivate extension Array where Element == URLQueryItem {
+  mutating func remove(_ item: URLQueryItem, ignoreItemValue: Bool) {
+    guard let index = self.index(where: { (pItem) -> Bool in
+      return ignoreItemValue ? pItem.name == item.name : pItem.name == item.name && pItem.value == item.value
+    }) else { return }
+
+    remove(at: index)
+  }
+
+  mutating func removeItemByName(_ name: String) {
+    guard let index = self.index(where: { (pItem) -> Bool in pItem.name == name}) else { return }
+    remove(at: index)
   }
 }
 

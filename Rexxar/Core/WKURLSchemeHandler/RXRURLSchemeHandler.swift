@@ -52,7 +52,7 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
       comp.scheme = "file"
 
       // load data from local
-      guard let url = comp.url, FileManager.default.fileExists(atPath: url.absoluteString) else { return }
+      guard let url = comp.url, FileManager.default.fileExists(atPath: url.path) else { return }
 
       do {
         let data = try Data(contentsOf: url)
@@ -103,18 +103,21 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
   }
 
   private func complete(with data: Data?, response: URLResponse?, error: Error?, for urlSchemeTask: WKURLSchemeTask) {
-    if let error = error {
-      urlSchemeTask.didFailWithError(error)
-      return
-    }
+    // Use serial queue to avoid potential dead lock of multiple urlSchemeTasks.
+    DispatchQueue(label: "rexxar_scheme_handler").async {
+      if let error = error {
+        urlSchemeTask.didFailWithError(error)
+        return
+      }
 
-    if let response = response {
-      urlSchemeTask.didReceive(response)
+      if let response = response {
+        urlSchemeTask.didReceive(response)
+      }
+      if let data = data {
+        urlSchemeTask.didReceive(data)
+      }
+      urlSchemeTask.didFinish()
     }
-    if let data = data {
-      urlSchemeTask.didReceive(data)
-    }
-    urlSchemeTask.didFinish()
   }
 }
 

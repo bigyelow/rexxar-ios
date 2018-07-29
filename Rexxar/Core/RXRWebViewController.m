@@ -84,30 +84,30 @@
 
 - (void)loadRequest:(NSURLRequest *)request
 {
-  if ([request.URL isFileURL]) {
-    if ([_webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
-      NSURLComponents *comp = [NSURLComponents componentsWithURL:request.URL resolvingAgainstBaseURL:YES];
-      comp.query = nil;
-      NSURL *allowingURL = [comp.URL URLByDeletingLastPathComponent];
-      [_webView loadFileURL:request.URL allowingReadAccessToURL:allowingURL];
+  if (@available(iOS 11.0, *)) {
+    [_webView loadRequest:[request.URL isFileURL] ? request.customLocalFileRequest : request.customMainRequest];
+  }
+  else {
+    if ([request.URL isFileURL]) {
+      if ([_webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
+        NSURLComponents *comp = [NSURLComponents componentsWithURL:request.URL resolvingAgainstBaseURL:YES];
+        comp.query = nil;
+        NSURL *allowingURL = [comp.URL URLByDeletingLastPathComponent];
+        [_webView loadFileURL:request.URL allowingReadAccessToURL:allowingURL];
+      } else {
+        NSFileManager *m = [NSFileManager defaultManager];
+        NSURL *sourceURL = [NSURL fileURLWithPath:request.URL.path];
+        NSURL *tmpURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:@"rexxar"];
+        NSURL *destURL = [tmpURL URLByAppendingPathComponent:sourceURL.lastPathComponent];
+
+        [m createDirectoryAtURL:tmpURL withIntermediateDirectories:YES attributes:nil error:nil];
+        [m removeItemAtURL:destURL error:nil];
+        [m copyItemAtURL:sourceURL toURL:destURL error:nil];
+
+        NSURL *URL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", destURL, request.URL.query]];
+        [_webView loadRequest:[NSURLRequest requestWithURL:URL]];
+      }
     } else {
-      NSFileManager *m = [NSFileManager defaultManager];
-      NSURL *sourceURL = [NSURL fileURLWithPath:request.URL.path];
-      NSURL *tmpURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:@"rexxar"];
-      NSURL *destURL = [tmpURL URLByAppendingPathComponent:sourceURL.lastPathComponent];
-
-      [m createDirectoryAtURL:tmpURL withIntermediateDirectories:YES attributes:nil error:nil];
-      [m removeItemAtURL:destURL error:nil];
-      [m copyItemAtURL:sourceURL toURL:destURL error:nil];
-
-      NSURL *URL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", destURL, request.URL.query]];
-      [_webView loadRequest:[NSURLRequest requestWithURL:URL]];
-    }
-  } else {
-    if (@available(iOS 11.0, *)) {
-      [_webView loadRequest:request.customMainRequest];
-    }
-    else {
       [_webView loadRequest:request];
     }
   }

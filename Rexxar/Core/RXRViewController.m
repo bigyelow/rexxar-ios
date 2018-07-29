@@ -312,12 +312,12 @@ decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
 
   // add uri query
   NSURLComponents *comp = [NSURLComponents componentsWithString:htmlFileURL.absoluteString.stringByRemovingPercentEncoding];
-  NSURLQueryItem *uriItem = [NSURLQueryItem queryItemWithName:@"uri" value:uri.absoluteString.stringByRemovingPercentEncoding];
+  NSURLQueryItem *uriItem = [NSURLQueryItem queryItemWithName:RXRURLQueryURIKey value:uri.absoluteString.stringByRemovingPercentEncoding];
   NSMutableArray *queryItems = [comp.queryItems mutableCopy];
   if (queryItems.count && uriItem) {
     [queryItems addObject:uriItem];
-    comp.queryItems = queryItems;
   }
+  comp.queryItems = queryItems;
 
   return comp.URL;
 }

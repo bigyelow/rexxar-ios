@@ -9,9 +9,9 @@
 import UIKit
 
 private let isMainRequestKey = "is_main_request"
-private let schemeKey = "_rexttp_scheme"  // Server needs support this query_name.
-private let hostKey = "_rexttp_host"  // Server needs support this query_name.
-private let portKey = "_rexttp_port"  // Server needs support this query_name.
+
+private let rexxarErrorDomain = "rexxar_error_domain"
+private let rexxarErrorMessageKey = "rexxar_error_message"
 
 @available(iOS 11.0, *)
 @objc public protocol RXRURLSchemeHandlerDelegate {
@@ -35,45 +35,58 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
 
     guard var comp = URLComponents(url: rexxarURL, resolvingAgainstBaseURL: true) else { return }
 
-    // If is `main request`, fetch data directly and return it to WKWebView by calling urlSchemeTask's callback.
     if let items = comp.queryItems,
       items.filter({ (item) -> Bool in return item.name == isMainRequestKey && item.value == "1"}).count > 0 {
+      // If is `main request`, fetch data directly and return it to WKWebView by calling urlSchemeTask's callback.
 
+      comp.queryItems?.removeItemByName(isMainRequestKey)
       comp.scheme = comp.scheme?.httpScheme
       guard let url = comp.url else { return }
       sendSimpleRequest(with: url, for: urlSchemeTask)
 
     } else if let items = comp.queryItems,
-      items.filter({ (item) -> Bool in return item.name == RXRLocalFileSchemeKey }).count > 0 { // If is request for loading local html
+      items.filter({ (item) -> Bool in return item.name == RXRURLQueryOriginalURLKey }).count > 0 {
+      // If is request for loading local html
 
-      comp.queryItems?.removeItemByName(RXRLocalFileSchemeKey)
+      let filteredItems = items.filter({ (item) -> Bool in return item.name == RXRURLQueryOriginalURLKey })
+      guard filteredItems.count > 0 else { return }
+      guard let originalFileURLStr = filteredItems[0].value else { return}
+      guard var fileComp = URLComponents(string: originalFileURLStr) else { return }
 
-      // change scheme to `file`
-      comp.scheme = "file"
+      // Remove uri
+      fileComp.queryItems?.removeItemByName(RXRURLQueryURIKey)
 
-      // load data from local
-      guard let url = comp.url, FileManager.default.fileExists(atPath: url.path) else { return }
+      guard var fileLocation = fileComp.url?.absoluteString else { return }
+      if let range = fileLocation.range(of: "file://") {
+        fileLocation.removeSubrange(range)
+      }
+      guard FileManager.default.fileExists(atPath: fileLocation) else { return }
 
+      // Start to load local file
       do {
-        let data = try Data(contentsOf: url)
-        complete(with: data, response: nil, error: nil, for: urlSchemeTask)
+        let data = try Data(contentsOf: URL(fileURLWithPath: fileLocation))
+        complete(with: data, response: response(with: urlSchemeTask.request.url!), error: nil, for: urlSchemeTask)
       }
       catch {
-        assert(false, "Load local html file error")
+        print(error)
+        complete(with: nil,
+                 response: nil,
+                 error: NSError(domain: rexxarErrorDomain, code: 1, userInfo: [rexxarErrorMessageKey: error.localizedDescription]),
+                 for: urlSchemeTask)
       }
 
-    } else if comp.url != nil {  // If is `js request` from html, check if it needs some decoration.
+    } else if comp.url != nil {
+      // If is `js request` from html, check if it needs some decoration.
 
-      // Replace scheme, host, port if needed
       if let queryItems = comp.queryItems {
         for item in queryItems {
-          if item.name == hostKey {
+          if item.name == RXRURLQueryHostKey {
             comp.host = item.value
             comp.queryItems?.remove(item, ignoreItemValue: false)
-          } else if item.name == schemeKey {
+          } else if item.name == RXRURLQuerySchemeKey {
             comp.scheme = item.value
             comp.queryItems?.remove(item, ignoreItemValue: false)
-          } else if item.name == portKey && item.value != nil {
+          } else if item.name == RXRURLQueryPortKey && item.value != nil {
             comp.port = Int(item.value!)
             comp.queryItems?.remove(item, ignoreItemValue: false)
           }
@@ -94,6 +107,10 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
 
   public func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
 
+  }
+
+  private func response(with url: URL) -> HTTPURLResponse? {
+    return HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)
   }
 
   private func sendSimpleRequest(with url: URL, for urlSchemeTask: WKURLSchemeTask) {
@@ -123,7 +140,9 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
 
 @available(iOS 11.0, *)
 @objc public extension NSURLRequest {
-  public var customMainRequest: NSURLRequest? {
+
+  /// http(s) request to rexttp(s) request
+  public var remoteRexttpMode: NSURLRequest? {
     guard let url = url else { return nil }
     guard let comp = NSURLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
 
@@ -132,7 +151,7 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
       assert(false, "Main request should be scheme of `http` or `https`")
       return nil
     }
-    comp.scheme = RXRConfig.rexxarHttpScheme
+    comp.scheme = comp.scheme!.rexttpScheme
 
     // Add is_main_request=1
     let mainQueryItem = URLQueryItem(name: isMainRequestKey, value: "1")
@@ -147,7 +166,8 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
     return copied(with: customURL)
   }
 
-  public var customLocalFileRequest: NSURLRequest? {
+  /// local file request to rexttp(s) request
+  public var localRexttpMode: NSURLRequest? {
     guard let url = url else { return nil }
     guard var comp = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return nil }
 
@@ -156,10 +176,27 @@ public class RXRURLSchemeHandler: NSObject, WKURLSchemeHandler {
       return nil
     }
 
-    // change file:// to rexttp(s)://
-    for item in comp.queryItems ?? [] where item.name == RXRLocalFileSchemeKey {
-      comp.scheme = item.value
-      break
+    for item in comp.queryItems ?? [] {
+      if item.name == RXRURLQuerySchemeKey {
+        comp.scheme = item.value
+      } else if item.name == RXRURLQueryHostKey {
+        comp.host = item.value
+      } else if item.name == RXRURLQueryPortKey && item.value != nil {
+        comp.port = Int(item.value!)
+      }
+    }
+    comp.queryItems?.removeItemByName(RXRURLQuerySchemeKey)
+    comp.queryItems?.removeItemByName(RXRURLQueryPortKey)
+    comp.queryItems?.removeItemByName(RXRURLQueryHostKey)
+
+    if let originalURL = url.absoluteString.removingPercentEncoding {
+      let originalItem = URLQueryItem(name: RXRURLQueryOriginalURLKey, value: originalURL)
+      if var queryItems = comp.queryItems {
+        queryItems.append(originalItem)
+        comp.queryItems = queryItems
+      } else {
+        comp.queryItems = [originalItem]
+      }
     }
 
     guard let customURL = comp.url else { return nil }

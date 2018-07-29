@@ -12,9 +12,13 @@
 @protocol RXRLogger;
 @protocol RXRErrorHandler;
 
-FOUNDATION_EXPORT const NSString *RXRLocalFileSchemeKey;
-
 NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString *RXRURLQuerySchemeKey;
+FOUNDATION_EXPORT NSString *RXRURLQueryHostKey;
+FOUNDATION_EXPORT NSString *RXRURLQueryPortKey;
+FOUNDATION_EXPORT NSString *RXRURLQueryURIKey;
+FOUNDATION_EXPORT NSString *RXRURLQueryOriginalURLKey;
 
 /**
  * `RXRConfig` 提供对 Rexxar 的全局配置接口。

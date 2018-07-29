@@ -85,7 +85,7 @@
 - (void)loadRequest:(NSURLRequest *)request
 {
   if (@available(iOS 11.0, *)) {
-    [_webView loadRequest:[request.URL isFileURL] ? request.customLocalFileRequest : request.customMainRequest];
+    [_webView loadRequest:[request.URL isFileURL] ? request.localRexttpMode : request.remoteRexttpMode];
   }
   else {
     if ([request.URL isFileURL]) {
@@ -174,11 +174,12 @@
   }
 
   if (@available(iOS 11.0, *)) {
-    if (!RXRConfig.rexxarHttpScheme) {
-      NSAssert(NO, @"Should set `rexxarHttpScheme`");
+    if (!RXRConfig.rexxarHttpScheme || !RXRConfig.rexxarHttpsScheme) {
+      NSAssert(NO, @"Should set `rexxarHttpScheme` and `rexxarHttpsScheme`");
       return nil;
     }
     [webConfiguration setURLSchemeHandler:[[RXRURLSchemeHandler alloc] initWithDelegate:[self urlSchemeHandler]] forURLScheme:RXRConfig.rexxarHttpScheme];
+    [webConfiguration setURLSchemeHandler:[[RXRURLSchemeHandler alloc] initWithDelegate:[self urlSchemeHandler]] forURLScheme:RXRConfig.rexxarHttpsScheme];
   }
 
   WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];

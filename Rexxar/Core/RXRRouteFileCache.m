@@ -211,17 +211,23 @@ static NSString * const RoutesMapFile = @"routes.json";
 {
   if (@available(iOS 11.0, *)) {
     NSString *rexxarScheme;
-    if ([url.scheme.lowercaseString isEqualToString:@"http"]) {
+    if ([url.scheme.lowercaseString isEqualToString:@"http"] && RXRConfig.rexxarHttpScheme) {
       rexxarScheme = RXRConfig.rexxarHttpScheme;
     }
-    else if ([url.scheme.lowercaseString isEqualToString:@"https"]) {
+    else if ([url.scheme.lowercaseString isEqualToString:@"https"] && RXRConfig.rexxarHttpsScheme) {
       rexxarScheme = RXRConfig.rexxarHttpsScheme;
     }
     else {
-      NSAssert(NO, @"Invalide scheme for `url`");
+      NSAssert(NO, @"Invalide scheme of `url`");
       return nil;
     }
-    return [NSString stringWithFormat:@"?%@=%@", RXRLocalFileSchemeKey, rexxarScheme];
+    NSMutableString *string = [NSString stringWithFormat:@"?%@=%@&%@=%@",
+                               RXRURLQuerySchemeKey, rexxarScheme,
+                               RXRURLQueryHostKey, url.host.stringByRemovingPercentEncoding].mutableCopy;
+    if (url.port) {
+      [string appendFormat:@"&%@=%@", RXRURLQueryPortKey, url.port];
+    }
+    return string;
   }
 
   return nil;

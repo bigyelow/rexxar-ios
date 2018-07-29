@@ -11,7 +11,11 @@
 #import "RXRConfig.h"
 #import "RXRRouteManager.h"
 
-const NSString *RXRLocalFileSchemeKey = @"rexxar_scheme";
+NSString *RXRURLQuerySchemeKey = @"_rexttp_scheme";
+NSString *RXRURLQueryHostKey = @"_rexttp_host";
+NSString *RXRURLQueryPortKey = @"_rexttp_port";
+NSString *RXRURLQueryURIKey = @"uri";
+NSString *RXRURLQueryOriginalURLKey = @"_rexttp_original_url";
 
 @implementation RXRConfig
 
@@ -53,24 +57,24 @@ static NSString * const DefaultRXRHost = @"rexxar-container";
   sErrorHandler = errorHandler;
 }
 
++ (NSString *)rexxarHttpScheme
+{
+  return sRexxarHttpScheme;
+}
+
 + (void)setRexxarHttpScheme:(NSString *)rexxarHttpScheme
 {
   sRexxarHttpScheme = rexxarHttpScheme;
 }
 
-+ (NSString *)rexxarHttpScheme
++ (NSString *)rexxarHttpsScheme
 {
-  return sRexxarHttpScheme ?: @"http";
+  return sRexxarHttpsScheme;
 }
 
 + (void)setRexxarHttpsScheme:(NSString *)rexxarHttpsScheme
 {
-  sRexxarHttpScheme = sRexxarHttpScheme;
-}
-
-+ (NSString *)rexxarHttpsScheme
-{
-  return sRexxarHttpsScheme ?: @"https";
+  sRexxarHttpsScheme = rexxarHttpsScheme;
 }
 
 + (NSInteger)reloadLimitWhen404
